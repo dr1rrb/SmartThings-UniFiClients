@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
+using UniFiControllerUpnpAdapter.Business;
 
 namespace UniFiControllerUpnpAdapter
 {
@@ -12,15 +14,19 @@ namespace UniFiControllerUpnpAdapter
     {
         public static void Main(string[] args)
         {
-            var host = new WebHostBuilder()
+	        var arguments = ApplicationArguments.GetArguments;
+			var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()
-                .UseApplicationInsights()
-                .Build();
+				.UseUrls($"http://0.0.0.0:{arguments.GetValue(ApplicationArguments.Port)}")
+				.Build();
 
-            host.Run();
+	        ((DeviceService)host.Services.GetService<IDeviceService>()).Start();
+	        ((SsdpPublishingService)host.Services.GetService<ISsdpPublishingService>()).Start();
+
+			host.Run();
         }
     }
 }

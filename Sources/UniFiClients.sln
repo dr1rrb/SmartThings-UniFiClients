@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+VisualStudioVersion = 15.0.26510.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniFiControllerUpnpAdapter", "UniFiControllerUpnpAdapter\UniFiControllerUpnpAdapter.csproj", "{388D938E-D963-4FCF-BCEE-3F405AF76A4A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniFiControllerUpnpAdapter", "UniFiControllerUpnpAdapter\UniFiControllerUpnpAdapter.csproj", "{388D938E-D963-4FCF-BCEE-3F405AF76A4A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SmartthingsUniFiClientsDevices", "SmartthingsUniFiClientsDevices", "{45024BA5-3F33-4C86-B3A8-9F8A6F8123A2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
