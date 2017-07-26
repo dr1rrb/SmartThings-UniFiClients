@@ -6,6 +6,10 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniFiControllerUpnpAdapter", "UniFiControllerUpnpAdapter\UniFiControllerUpnpAdapter.csproj", "{388D938E-D963-4FCF-BCEE-3F405AF76A4A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SmartthingsUniFiClientsDevices", "SmartthingsUniFiClientsDevices", "{45024BA5-3F33-4C86-B3A8-9F8A6F8123A2}"
+	ProjectSection(SolutionItems) = preProject
+		UniFi client device.groovy = UniFi client device.groovy
+		UniFi controller.groovy = UniFi controller.groovy
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
