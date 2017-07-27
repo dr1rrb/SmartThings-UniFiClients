@@ -1,7 +1,7 @@
 /**
  *  UniFi client device
  *
- *  Copyright 2016 SmartThings
+ *  Copyright 2017 Dr1rrb
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -30,7 +30,8 @@ metadata {
 		// TODO: define status and reply messages here
 	}
 
-	tiles {
+	tiles 
+	{
 		standardTile("presence", "device.presence", width: 3, height: 2, canChangeBackground: true, canChangeIcon: true) {
 			state("not present", label:'not present', icon:"st.presence.tile.not-present", backgroundColor:"#ffffff", action: "refresh", nextState: "not present")
 			state("present", label:'present', icon:"st.presence.tile.present", backgroundColor:"#53a7c0", action: "refresh", nextState: "present")

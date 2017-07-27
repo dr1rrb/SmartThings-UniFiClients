@@ -7,8 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniFiControllerUpnpAdapter"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SmartthingsUniFiClientsDevices", "SmartthingsUniFiClientsDevices", "{45024BA5-3F33-4C86-B3A8-9F8A6F8123A2}"
 	ProjectSection(SolutionItems) = preProject
-		UniFi client device.groovy = UniFi client device.groovy
+		UniFi client.groovy = UniFi client.groovy
 		UniFi controller.groovy = UniFi controller.groovy
+		UniFi manager.groovy = UniFi manager.groovy
 	EndProjectSection
 EndProject
 Global

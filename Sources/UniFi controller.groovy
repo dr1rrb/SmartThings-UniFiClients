@@ -16,17 +16,23 @@ import groovy.time.TimeCategory
  *
  */
 metadata {
-	definition (name: "UniFi controller", namespace: "torick.net", author: "Dr1rrb") {
+	definition (
+		name: "UniFi controller", 
+		namespace: "torick.net", 
+		author: "Dr1rrb") 
+	{
 		capability "Refresh"
         
         attribute "multiplexerStatus", "enum", ["offline", "online"]
 	}
 
-	simulator {
+	simulator 
+	{
 		// TODO: define status and reply messages here
 	}
 
-	tiles {
+	tiles 
+	{
 		standardTile("status", "device.multiplexerStatus", width: 3, height: 2, canChangeBackground: true, canChangeIcon: true) {
             state "offline", label:'Inactive', icon:"st.unknown.zwave.static-controller", backgroundColor:"#ffffff", action: "refresh", nextState: "offline"
 			state "online", label:'Active', icon:"st.unknown.zwave.static-controller", backgroundColor:"#53a7c0", action: "refresh", nextState: "online"
@@ -51,8 +57,6 @@ def installed()
 {
 	log.debug "Installed with settings: ${settings}"
     
-    updateDataValue("host", "192.168.144.38:5000")
-
 	configure();
 }
 
@@ -149,7 +153,7 @@ def parse(String description) {
         .collectEntries { header -> header.split(': ', 2).with { [(it[0]): (it.drop(1).find { true })] } };
     def deviceId = headers["Smartthings-Device"];
     
-    if(!deviceId)
+    if (!deviceId)
     {
     	log.debug "Target device not set, ignore the message.";
         return;
