@@ -24,6 +24,7 @@ metadata {
 		capability "Refresh"
         
         attribute "multiplexerStatus", "enum", ["offline", "online"]
+        attribute "host", "string"
 	}
 
 	simulator 
@@ -46,8 +47,6 @@ metadata {
         	state "val", label:'Identifier\r\n${currentValue}', defaultState: true
 		}        
         
-        //st.unknown.zwave.static-controller
-        //st.Office.office5
 		main("status")
 		details(["status", "host", "dni"])
 	}
@@ -74,24 +73,31 @@ def configure()
     runEvery1Minute("pingController");
 	pingController();
     
-    sendEvent(name: "host", value: getDataValue("host"))
-    sendEvent(name: "dni", value: "${device.deviceNetworkId}")
+    log.debug "configured: host=${device.currentValue("host")}; dni=${device.deviceNetworkId}"
 }
 
 def updateHost(newHost) 
 {
-	def oldHost = getDataValue("host")
+	def oldHost = device.currentValue("host");
 	if (newHost && oldHost != newHost) 
 	{
 		log.debug "Host updated: ${newHost} (was: ${oldHost})"
 
-		updateDataValue("host", newHost);
-        sendEvent(name: "host", value: newHost);
-        pingController();
+		sendEvent(
+        	name: "host", 
+            value: newHost,
+            descriptionText: "Host ${device.displayName} was updated. It's now ${newHost}",
+            displayed: false,
+            isStateChange: true);
 	}
 }
 
-def refresh() {
+def updateHostStatus(isOnline)
+{
+}
+
+def refresh() 
+{
 	log.debug "Executing 'refresh'"
     
     pingController();
@@ -99,17 +105,20 @@ def refresh() {
 
 def pingController() 
 {
+	def host = device.currentValue("host");
+
 	// First update the current status if the controller did not replied since more than 5 min
 	def currentState = device.currentState("multiplexerStatus");
-    if (currentState)
+    if (currentState && state.lastReportedStatus)
     {
-    	log.debug "Ping controller (last status reported: ${currentState.value} @ ${currentState.date})"
+    	log.debug "Ping controller (last status reported: ${currentState.value} @ ${state.lastReportedStatus}, initially reported on ${currentState.date})"
     	if (currentState.value == "online")
         use( TimeCategory ) {
-            if(currentState.date + 5.minutes < new Date())
+            if(Date.parseToStringDate(state.lastReportedStatus) + 5.minutes < new Date())
             {
             	log.debug "Controller didn't replied to ping since more than 5 minutes, report it as offline."
-            	sendEvent(name: "multiplexerStatus", value: "offline")
+            	
+				sendEvent(name: "multiplexerStatus", value: "offline")
             }
         }
     }
@@ -119,7 +128,6 @@ def pingController()
     }
 
 	// Send ping request
-	def host = getDataValue("host");
     def id = device.deviceNetworkId;
     def command = new physicalgraph.device.HubAction(
         method: "GET",
@@ -131,11 +139,12 @@ def pingController()
     
     def result = sendHubCommand(command)
     
-    log.debug "Sent ${command} => ${result}"
+    log.debug "Sent to ${host} ${command} => ${result}"
 }
 
-def parse(String description) {
-	log.debug "Received message '${description}'."
+def parse(String description) 
+{
+	//log.debug "Received message '${description}'."
     
     def message = description
     	.split(', ')
@@ -152,19 +161,21 @@ def parse(String description) {
         .drop(1) // Skip the request line ("NOTIFY /api/devices HTTP/1.1")
         .collectEntries { header -> header.split(': ', 2).with { [(it[0]): (it.drop(1).find { true })] } };
     def deviceId = headers["Smartthings-Device"];
-    
-    if (!deviceId)
+
+	if (!deviceId)
     {
-    	log.debug "Target device not set, ignore the message.";
+    	log.warn "Target device not set, ignore the message.";
         return;
     }
     
-    // As we received a message whith the device identifier, we can assume that the controller is online
+    // As we received a message with the device identifier, we can assume that the controller is online
     sendEvent(name: "multiplexerStatus", value: "online")
-    
+	state.lastReportedStatus = new Date().toString();
+        
+	// Then foward the message to the target device
     if (deviceId == device.deviceNetworkId)
     {
-    	log.debug "Message is for this controller, handle it locally."
+    	log.debug "Message is for this multiplexer, handle it locally."
     	parseLocal(description);
         return;
     }
@@ -180,6 +191,7 @@ def parse(String description) {
 	log.error "Device '${deviceId}' not found, cannot forward the message."
 }
 
-def parseLocal(String description) {
+def parseLocal(String description) 
+{
 	
 }

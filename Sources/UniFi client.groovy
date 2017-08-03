@@ -23,6 +23,8 @@ metadata {
 		capability "Sensor"
 		capability "Refresh"
         capability "Actuator"
+        
+        attribute "host", "string"
 	}
 
 	simulator 
@@ -45,8 +47,6 @@ def installed()
 {
 	log.debug "Installed with settings: ${settings}"
 
-    //updateDataValue("host", "192.168.144.38:5000")
-
 	configure()
 }
 
@@ -66,20 +66,46 @@ def refresh()
 
 def updateHost(newHost) 
 {
-	def oldHost = getDataValue("host")
+	def oldHost = device.currentValue("host");
 	if (newHost && oldHost != newHost) 
 	{
 		log.debug "Host updated: ${newHost} (was: ${oldHost})"
 
-		updateDataValue("host", newHost);
+		sendEvent(
+        	name: "host", 
+            value: newHost,
+            descriptionText: "Host ${device.displayName} was updated. It's now ${newHost}",
+            displayed: false,
+            isStateChange: true);
+
         subscribeToController();
+	}
+}
+
+def updateHostStatus(isOnline)
+{
+	def previous = device.currentValue("presence");
+	log.debug "Received notification of host status isOnline: ${isOnline} (Device was ${previous})."
+
+	if(isOnline)
+	{
+		refresh();
+	}
+	else
+	{
+		def changed = previous == "present";
+		sendEvent(
+        	name: "presence", 
+            value: "not present",
+            descriptionText: "${device.displayName} is not present",
+            displayed: changed,
+            isStateChange: changed);
 	}
 }
 
 def configure() 
 {
 	unschedule();
-	//unsubscribe();
 
     runEvery3Hours("subscribeToController");
 	subscribeToController();
@@ -89,7 +115,7 @@ def subscribeToController()
 {
 	log.debug "Subscribing to controller"
 
-	def host = getDataValue("host");
+	def host = device.currentValue("host");
     def id = device.deviceNetworkId;
 	def callback = "http://${device.hub.getDataValue("localIP")}:${device.hub.getDataValue("localSrvPortTCP")}/api/device/${id}";
     def command = new physicalgraph.device.HubAction(
@@ -106,22 +132,21 @@ def subscribeToController()
     
     def result = sendHubCommand(command)
     
-    log.debug "Sent ${command} => ${result}"
+    log.debug "Sent to ${host} ${command} => ${result}"
 }
 
 // parse events into attributes
 def parse(String description)
 {
-	log.debug "Received a message from the hub '${description}'"
+	//log.debug "Received a message from the hub '${description}'"
 	
     def msg = parseLanMessage(description)
-
 	if (msg?.json?.presence)
     {
 		def previous = device.currentValue("presence");
 		def changed = msg.json.presence != previous;
         
-        log.debug "Received a presence state changed notification '${msg.json.presence}' (was ${previous}; changed: ${changed})"
+        log.debug "Received a presence state notification '${msg.json.presence}' (was '${previous}'; changed: ${changed})"
         
 		sendEvent(
         	name: "presence", 

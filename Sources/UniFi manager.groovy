@@ -33,17 +33,29 @@ preferences
 			//input "searchTarget", "string", title: "Search Target", defaultValue: "urn:torick-net:device:WiFiDevice:1", required: true
 		}
 	}
-	page(name: "deviceDiscovery", title: "UniFi client setup", content: "deviceDiscovery")
+	
+	page(name: "deviceDiscovery", title: "UniFi controller setup", content: "deviceDiscovery")
+
+	page(name: "setupNotification", title: "UniFi controller setup", install: true, uninstall: false) {
+		section("Send notification when the UniFi controller goes offline?") {
+			input("recipients", "contact", title: "Send notifications to") {
+				input "phone", "phone", title: "Warn with text message (optional)", description: "Phone Number", required: false
+			}
+		}
+	}
 }
 
 def deviceDiscovery() 
 {
+	unschedule();
+	unsubscribe();
+
 	// First, start the SSDP discovery for setup. This mode runs only once, the "recurrancy" is ensured by the auto-refresh of this page.
 	startSsdpDiscoveryForSetup()
 
 	def devices = getDevices().collectEntries { key, value -> [(key): "${value.name}"] }
 
-	return dynamicPage(name: "deviceDiscovery", title: "Discovery Started!", nextPage: "", refreshInterval: 5, install: true, uninstall: false) {
+	return dynamicPage(name: "deviceDiscovery", title: "Discovery Started!", nextPage: "setupNotification", refreshInterval: 5, uninstall: false) {
 		section("Please wait while we discover your UniFi clients. Discovery can take a while, so sit back and relax! Select your device below once discovered.") {
 			input "selectedDevices", "enum", required: false, title: "Select clients (${devices.size() ?: 0} found)", multiple: true, options: devices
 		}
@@ -66,17 +78,18 @@ def updated()
 
 def initialize() 
 {
-	startSsdpDiscoveryForMaintenance()
+	unschedule();
+	unsubscribe();
 
-	setupSelectedDevices()
+	startSsdpDiscoveryForMaintenance();
+
+	setupSelectedDevices();
+	setupHubs();
 }
 
 // Region: SSDP discovery
 void startSsdpDiscoveryForMaintenance()
 {
-	unschedule();
-	unsubscribe();
-
 	subscribe(location, "ssdpTerm.urn:torick-net:device:UniFiDevice:1", onDeviceDiscoveredForMaintenance);
 
 	requestSsdpDiscovery();
@@ -85,34 +98,32 @@ void startSsdpDiscoveryForMaintenance()
 
 void startSsdpDiscoveryForSetup()
 {
-	unschedule();
-	unsubscribe();
-
 	subscribe(location, "ssdpTerm.urn:torick-net:device:UniFiDevice:1", onDeviceDiscoveredForSetup);
 
 	requestSsdpDiscovery();
 }
 
-void requestSsdpDiscovery() {
+void requestSsdpDiscovery() 
+{
 	log.debug "Searching for UniFi devices on LAN using SSDP"
 
 	sendHubCommand(new physicalgraph.device.HubAction("lan discovery urn:torick-net:device:UniFiDevice:1", physicalgraph.device.Protocol.LAN))
 }
 
-
-def onDeviceDiscoveredForMaintenance(evt) {
+def onDeviceDiscoveredForMaintenance(evt) 
+{
 	def eventArgs = parseLanMessage(evt.description);
 	def id = toDeviceId(eventArgs.ssdpUSN.toString());
 	def host = toHost(eventArgs.networkAddress, eventArgs.deviceAddress);
     def mac = "${eventArgs.mac}";
 
-    log.debug "Received SSDP for maintenance (host: ${host}; device: '${id}'; controller: ${mac})"
+    log.debug "Received SSDP for maintenance (host: '${host}'; device: '${id}'; controller: '${mac}')"
 
 	// Update the child device, if exists
     def client = getChild(id);
     if (client)
     {
-    	log.debug "Client device '${id}' exists (${client}), set its host to ${host}"
+    	log.debug "Client device '${id}' exists (${client}), set its host to '${host}'"
     	client.updateHost(host);
     }
     
@@ -130,7 +141,8 @@ def onDeviceDiscoveredForMaintenance(evt) {
     }
 }
 
-def onDeviceDiscoveredForSetup(evt) {
+def onDeviceDiscoveredForSetup(evt)
+{
 	def eventArgs = parseLanMessage(evt.description);
 	def id = toDeviceId(eventArgs.ssdpUSN.toString());
 	def host = toHost(eventArgs.networkAddress, eventArgs.deviceAddress);
@@ -188,7 +200,8 @@ void onDeviceConfirmed(physicalgraph.device.HubResponse response)
 }
 
 // Region: device setup
-def setupSelectedDevices() {
+def setupSelectedDevices()
+{
 	def devices = getDevices();
 	
     if(!selectedDevices)
@@ -246,6 +259,43 @@ def setupDevice(id)
     }
 }
 
+def setupHubs()
+{
+	def multiplexers = getChildDevices().findAll{ it -> it.hasAttribute("multiplexerStatus") }
+	unsubscribe(multiplexers)
+	subscribe(multiplexers, "multiplexerStatus", hubStatusChanged)
+}
+
+def hubStatusChanged(evt)
+{
+	if (evt.isStateChange())
+	{
+    	def hub = evt.device
+    	def host = hub.currentValue("host")
+        def status = evt.stringValue
+		
+        log.debug "Multiplexer '${hub}' (@${host}) is now ${status}. Update child devices and send notification to user."
+        
+    	getChildDevices()
+			.findAll
+            {
+            	log.debug "Sending ${it} ${it.hasAttribute("host")} / ${it.device.currentValue("host")}"
+            	it.hasAttribute("host") && it.device.currentValue("host") == host 
+            }
+			.each{ it.updateHostStatus(status == "online") }
+
+		def message = "${evt.displayName} is now ${evt.stringValue}."
+		if (location.contactBookEnabled && recipients) 
+		{
+			sendNotificationToContacts(message, recipients)
+		} 
+		else if(phone)
+		{
+			sendSms(phone, message)
+		}
+	}
+}
+
 def ensureHub(host, mac, hub)
 {
     def controller = getChild(mac);
@@ -266,6 +316,8 @@ def ensureHub(host, mac, hub)
                     "type": "hub"
                 ]
             ])
+
+		setupHubs();
     }
 }
 
