@@ -8,11 +8,9 @@ namespace UniFiControllerUpnpAdapter
 {
     public class ApplicationArguments
     {
-	    public static ArgumentManager GetArguments { get; } = ArgumentManager.Create(typeof(ApplicationArguments));
-
 		public static readonly Argument Help = CommonArguments.Help;
 
-	    public static readonly ValueArgument<int> Port = new ValueArgument<int>("p", "port")
+	    public static readonly ValueArgument<int> Port = new ValueArgument<int>("port")
 	    {
 		    Name = "Port",
 		    Description = "The port to listen on (used for communication between the smartthings devices and the upnp adapter).",
@@ -41,5 +39,8 @@ namespace UniFiControllerUpnpAdapter
 		    Description = "Password of the UniFi controller.",
 		    IsRequired = true
 	    };
+
+		// This MUST be the last on the class in order to let other properties being initialized
+	    public static ArgumentManager GetArguments { get; } = ArgumentManager.Create(typeof(ApplicationArguments));
 	}
 }

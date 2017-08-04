@@ -6,7 +6,7 @@
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *	  http://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
  *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
@@ -19,7 +19,7 @@ definition(
 	author: "Dr1rrb",
 	description: "Use clients of your unifi network as presence sensor.",
 	category: "Mode Magic",
-    singleInstance: true,
+	singleInstance: true,
 	iconUrl: "https://upload.wikimedia.org/wikipedia/commons/7/71/Ubiquiti_Logo.png",
 	iconX2Url: "https://upload.wikimedia.org/wikipedia/commons/7/71/Ubiquiti_Logo.png",
 	iconX3Url: "https://upload.wikimedia.org/wikipedia/commons/7/71/Ubiquiti_Logo.png")
@@ -115,30 +115,30 @@ def onDeviceDiscoveredForMaintenance(evt)
 	def eventArgs = parseLanMessage(evt.description);
 	def id = toDeviceId(eventArgs.ssdpUSN.toString());
 	def host = toHost(eventArgs.networkAddress, eventArgs.deviceAddress);
-    def mac = "${eventArgs.mac}";
+	def mac = "${eventArgs.mac}";
 
-    log.debug "Received SSDP for maintenance (host: '${host}'; device: '${id}'; controller: '${mac}')"
+	log.debug "Received SSDP for maintenance (host: '${host}'; device: '${id}'; controller: '${mac}')"
 
 	// Update the child device, if exists
-    def client = getChild(id);
-    if (client)
-    {
-    	log.debug "Client device '${id}' exists (${client}), set its host to '${host}'"
-    	client.updateHost(host);
-    }
-    
-    // Also update the controller if exists, or create it if missing
-    def controller = getChild(mac);
-    if (controller)
-    {
-    	log.debug "Controller for '${mac}' exists (${controller}), set its host to ${host}"
-    	controller.updateHost(host);
-    }
-    else if (client)
-    {
-    	log.debug "Controller is missing for '${mac}', create a new one"
-    	ensureHub(host, mac, client.hub.id)
-    }
+	def client = getChildDevice(id);
+	if (client)
+	{
+		log.debug "Client device '${id}' exists (${client}), set its host to '${host}'"
+		client.updateHost(host);
+	}
+	
+	// Also update the controller if exists, or create it if missing
+	def controller = getChildDevice(mac);
+	if (controller)
+	{
+		log.debug "Controller for '${mac}' exists (${controller}), set its host to ${host}"
+		controller.updateHost(host);
+	}
+	else if (client)
+	{
+		log.debug "Controller is missing for '${mac}', create a new one"
+		ensureHub(host, mac, client.hub.id)
+	}
 }
 
 def onDeviceDiscoveredForSetup(evt)
@@ -148,9 +148,9 @@ def onDeviceDiscoveredForSetup(evt)
 	def host = toHost(eventArgs.networkAddress, eventArgs.deviceAddress);
 	def path = eventArgs.ssdpPath
 
-    log.debug "Received SSDP for setup: '${id}', requesting its description document on: ${host}${path} (${evt.description})";
+	log.debug "Received SSDP for setup: '${id}', requesting its description document on: ${host}${path} (${evt.description})";
 
-	if (getChild(id))
+	if (getChildDevice(id))
 	{
 		log.debug "Device '${id}' is already installed";
 		return;
@@ -174,7 +174,7 @@ void onDeviceConfirmed(physicalgraph.device.HubResponse response)
 
 	def document = response.xml;
 	def id = toDeviceId(document?.device.UDN.text());
-    def host = toHost(response.ip, response.port);
+	def host = toHost(response.ip, response.port);
 
 	if (!id)
 	{
@@ -186,16 +186,16 @@ void onDeviceConfirmed(physicalgraph.device.HubResponse response)
 
 	def device = [
 			id: id,
-            hub: location.hubs[0].id,
+			hub: location.hubs[0].id,
 			host: host,
-            hostMac: response.mac,
+			hostMac: response.mac,
 			name: document.device.friendlyName.text(), 
 			model:document.device.modelName?.text(), 
 			serialNumber:document.device.serialNum?.text(), 
 		];
-    
-    log.debug "Received device description for '${id}': ${device}."
-    
+	
+	log.debug "Received device description for '${id}': ${device}."
+	
 	getDevices()[id] = device;
 }
 
@@ -204,10 +204,10 @@ def setupSelectedDevices()
 {
 	def devices = getDevices();
 	
-    if(!selectedDevices)
-    {
-    	log.debug "No devices selected yet."
-    }
+	if(!selectedDevices)
+	{
+		log.debug "No devices selected yet."
+	}
 	else if (selectedDevices instanceof String) // The magic of a non strongly typed language ...
 	{
 		log.debug "Selected devices (1) : ${selectedDevices}"
@@ -230,33 +230,33 @@ def setupDevice(id)
 		log.error "A device was selected but it is missing from the discovered devices: ${id}";
 		return;
 	}
-        
-	def child = getChild(id)
+		
+	def child = getChildDevice(id)
 	if (child) 
 	{
 		log.debug "Device ${id} already exists"
 	}
 	else
 	{
-    	// First, ensure to create a hub to act as callback multiplexer
-    	ensureHub(selectedDevice.host, selectedDevice.hostMac, selectedDevice.hub);
-    
+		// First, ensure to create a hub to act as callback multiplexer
+		ensureHub(selectedDevice.host, selectedDevice.hostMac, selectedDevice.hub);
+	
 		log.debug "Creating UniFi client device ${id}"
-        addChildDevice(
+		addChildDevice(
 			"torick.net", 
 			"UniFi client device",
 			selectedDevice.id, // == id, 
-            selectedDevice.hub, 
+			selectedDevice.hub, 
 			[
-                "label": selectedDevice.name,
-                "data": [
-                    "id": selectedDevice.id,
+				"label": selectedDevice.name,
+				"data": [
+					"id": selectedDevice.id,
 					"name": selectedDevice.name,
 					"host": selectedDevice.host,
-                    "type": "device"
-                ]
-            ])
-    }
+					"type": "device"
+				]
+			])
+	}
 }
 
 def setupHubs()
@@ -270,18 +270,18 @@ def hubStatusChanged(evt)
 {
 	if (evt.isStateChange())
 	{
-    	def hub = evt.device
-    	def host = hub.currentValue("host")
-        def status = evt.stringValue
+		def hub = evt.device
+		def host = hub.currentValue("host")
+		def status = evt.stringValue
 		
-        log.debug "Multiplexer '${hub}' (@${host}) is now ${status}. Update child devices and send notification to user."
-        
-    	getChildDevices()
+		log.debug "Multiplexer '${hub}' (@${host}) is now ${status}. Update child devices and send notification to user."
+		
+		getChildDevices()
 			.findAll
-            {
-            	log.debug "Sending ${it} ${it.hasAttribute("host")} / ${it.device.currentValue("host")}"
-            	it.hasAttribute("host") && it.device.currentValue("host") == host 
-            }
+			{
+				log.debug "Sending ${it} ${it.hasAttribute("host")} / ${it.device.currentValue("host")}"
+				it.hasAttribute("host") && it.device.currentValue("host") == host 
+			}
 			.each{ it.updateHostStatus(status == "online") }
 
 		def message = "${evt.displayName} is now ${evt.stringValue}."
@@ -298,32 +298,30 @@ def hubStatusChanged(evt)
 
 def ensureHub(host, mac, hub)
 {
-    def controller = getChild(mac);
-    if (controller == null)
-    {
-    	log.debug "Creating controller '${mac}' on hub '${hub}' (host: ${host})"
-    
-        addChildDevice(
-            "torick.net", 
-            "UniFi controller",
-            mac,
-            hub, 
-            [
-                "label": "UniFi controller",
-                "data": [
-                    "host": host,
-                    "hostMac": mac,
-                    "type": "hub"
-                ]
-            ])
+	def controller = getChildDevice(mac);
+	if (controller == null)
+	{
+		log.debug "Creating controller '${mac}' on hub '${hub}' (host: ${host})"
+	
+		addChildDevice(
+			"torick.net", 
+			"UniFi controller",
+			mac,
+			hub, 
+			[
+				"label": "UniFi controller",
+				"data": [
+					"host": host,
+					"hostMac": mac,
+					"type": "hub"
+				]
+			])
 
 		setupHubs();
-    }
+	}
 }
 
 // Region: Helpers
-def getChild(id) { getChildDevice(id) }
-
 def getDevices() { state.devices ?: (state.devices = [:]); }
 
 def toDeviceId(ssdpUSN) { ssdpUSN.split(':')[1][0..-1]; }
