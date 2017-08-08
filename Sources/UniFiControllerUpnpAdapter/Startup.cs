@@ -4,15 +4,15 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Threading.Tasks;
-using Framework.Persistence;
-using Framework.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using UniFiControllerUpnpAdapter.Business;
-using _callbacks = System.Collections.Immutable.ImmutableDictionary<string, System.Collections.Immutable.ImmutableList<UniFiControllerUpnpAdapter.Business.Callback>>;
+//using Framework.Persistence;
+//using Framework.Serialization;
+//using _callbacks = System.Collections.Immutable.ImmutableDictionary<string, System.Collections.Immutable.ImmutableList<UniFiControllerUpnpAdapter.Business.Callback>>;
 
 namespace UniFiControllerUpnpAdapter
 {
@@ -40,28 +40,28 @@ namespace UniFiControllerUpnpAdapter
 
 	        services
 		        .AddSingleton<IScheduler>(svc => TaskPoolScheduler.Default)
-		        .AddSingleton<IUniFiController>(svc => new UniFiController(
-					new Uri($"https://{arguments.GetValue(ApplicationArguments.Controller)}/api/"),
-					arguments.GetValue(ApplicationArguments.Username),
-					arguments.GetValue(ApplicationArguments.Password), 
-					svc.GetService<IScheduler>()))
-		        .AddSingleton<ISsdpPublishingService>(svc => new SsdpPublishingService(
-			        svc.GetService<IUniFiController>(),
-			        new Uri($"http://192.168.144.202:{arguments.GetValue(ApplicationArguments.Port)}"),
-					svc.GetService<IScheduler>()))
-		        .AddSingleton<IObjectSerializer>(svc => new JsonConverterObjetSerializer())
-		        .AddSingleton<IObservableDataPersister<_callbacks>>(svc =>
-		        {
-			        var persister = new LockedFileDataPersister<_callbacks>("callbacks.json", svc.GetService<IObjectSerializer>());
-			        var withDefault = new DefaultValueDataPersisterDecorator<_callbacks>(persister, DefaultValueDataPersisterDecoratorMode.All, ImmutableDictionary<string, ImmutableList<Callback>>.Empty);
-			        var observable = new ObservableDataPersisterDecorator<_callbacks>(withDefault, svc.GetService<IScheduler>());
+		   //     .AddSingleton<IUniFiController>(svc => new UniFiController(
+					//new Uri($"https://{arguments.GetValue(ApplicationArguments.Controller)}/api/"),
+					//arguments.GetValue(ApplicationArguments.Username),
+					//arguments.GetValue(ApplicationArguments.Password), 
+					//svc.GetService<IScheduler>()))
+		   //     .AddSingleton<ISsdpPublishingService>(svc => new SsdpPublishingService(
+			  //      new UniFiClientProvider(svc.GetService<IUniFiController>()),
+			  //      new Uri($"http://192.168.144.202:{arguments.GetValue(ApplicationArguments.Port)}"),
+					//svc.GetService<IScheduler>()))
+		   //     .AddSingleton<IObjectSerializer>(svc => new JsonConverterObjetSerializer())
+		   //     .AddSingleton<IObservableDataPersister<_callbacks>>(svc =>
+		   //     {
+			  //      var persister = new LockedFileDataPersister<_callbacks>("callbacks.json", svc.GetService<IObjectSerializer>());
+			  //      var withDefault = new DefaultValueDataPersisterDecorator<_callbacks>(persister, DefaultValueDataPersisterDecoratorMode.All, ImmutableDictionary<string, ImmutableList<Callback>>.Empty);
+			  //      var observable = new ObservableDataPersisterDecorator<_callbacks>(withDefault, svc.GetService<IScheduler>());
 
-			        return observable;
-		        })
-		        .AddSingleton<IDeviceService>(svc => new DeviceService(
-			        svc.GetService<IUniFiController>(),
-			        svc.GetService<IObservableDataPersister<_callbacks>>(),
-			        svc.GetService<IScheduler>()))
+			  //      return observable;
+		   //     })
+		   //     .AddSingleton<IDeviceService>(svc => new DeviceService(
+			  //      svc.GetService<IUniFiController>(),
+			  //      svc.GetService<IObservableDataPersister<_callbacks>>(),
+			  //      svc.GetService<IScheduler>()))
 		        ;
 		}
 

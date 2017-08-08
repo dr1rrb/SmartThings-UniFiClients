@@ -23,7 +23,7 @@ namespace UniFiControllerUpnpAdapter
 				.UseUrls($"http://0.0.0.0:{arguments.GetValue(ApplicationArguments.Port)}")
 				.Build();
 
-	        ((DeviceService)host.Services.GetService<IDeviceService>()).Start();
+	        //((DeviceService)host.Services.GetService<IDeviceService>()).Start();
 	        ((SsdpPublishingService)host.Services.GetService<ISsdpPublishingService>()).Start();
 
 			host.Run();
