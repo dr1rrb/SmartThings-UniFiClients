@@ -92,7 +92,7 @@ namespace Torick.Smartthings.Devices.UniFi
 					Presence = isConnected ? PresenceState.Present : PresenceState.NotPresent
 				})
 				{
-					Headers = { { "Smartthings-Device", deviceId } }
+					Headers = { { SmartthingsDevice.Id, deviceId } }
 				};
 				payload.TrySetContentLength();
 

@@ -54,7 +54,7 @@ namespace Torick.Smartthings.Devices.UniFi
 			Response.Headers["SERVER"] = $"Windows/10.1706 UPnP/1.1 UniFiClientManagerServer/1.0";
 			Response.Headers["TIMEOUT"] = $"Second-{callback.Duration.TotalSeconds}";
 			Response.Headers["Content-Length"] = "0";
-			Response.Headers["Smartthings-Device"] = deviceId;
+			Response.Headers[SmartthingsDevice.Id] = deviceId;
 
 			return Ok();
 		}
