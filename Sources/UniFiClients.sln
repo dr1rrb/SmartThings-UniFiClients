@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26724.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniFiControllerUpnpAdapter", "UniFiControllerUpnpAdapter\UniFiControllerUpnpAdapter.csproj", "{388D938E-D963-4FCF-BCEE-3F405AF76A4A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Torick.Smartthings.Devices.Publisher", "Torick.Smartthings.Devices.Publisher\Torick.Smartthings.Devices.Publisher.csproj", "{388D938E-D963-4FCF-BCEE-3F405AF76A4A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SmartthingsUniFiClientsDevices", "SmartthingsUniFiClientsDevices", "{45024BA5-3F33-4C86-B3A8-9F8A6F8123A2}"
 	ProjectSection(SolutionItems) = preProject
@@ -12,9 +12,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SmartthingsUniFiClientsDevi
 		UniFi manager.groovy = UniFi manager.groovy
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniFiControllerClientsProvider", "UniFiControllerClientsProvider\UniFiControllerClientsProvider.csproj", "{8057D415-60CD-4ECB-ABB7-A47782903F84}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Torick.IoC.Module", "Torick.IoC.Module\Torick.IoC.Module.csproj", "{BB98C289-68C0-41F5-A02B-46FDBDF06C7F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartthingsSsdpDeviceProvider", "SmartthingsSsdpDeviceProvider\SmartthingsSsdpDeviceProvider.csproj", "{E201ABF3-67B8-4FA9-A26D-E1E3979D22D8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Torick.IoC.Module.Loader", "Torick.IoC.Module.Loader\Torick.IoC.Module.Loader.csproj", "{DCCFE9A6-5229-4225-8438-B9BE190443F1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Torick.Smartthings.Devices", "Torick.Smartthings.Devices\Torick.Smartthings.Devices.csproj", "{2A0557AA-2D09-482A-B76C-BD2AF18E8C41}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Torick.Smartthings.Devices.UniFi", "Torick.Smartthings.Devices.UniFi\Torick.Smartthings.Devices.UniFi.csproj", "{C84B55A3-D606-4952-82DD-429114F3421B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,14 +30,22 @@ Global
 		{388D938E-D963-4FCF-BCEE-3F405AF76A4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{388D938E-D963-4FCF-BCEE-3F405AF76A4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{388D938E-D963-4FCF-BCEE-3F405AF76A4A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8057D415-60CD-4ECB-ABB7-A47782903F84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8057D415-60CD-4ECB-ABB7-A47782903F84}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8057D415-60CD-4ECB-ABB7-A47782903F84}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8057D415-60CD-4ECB-ABB7-A47782903F84}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E201ABF3-67B8-4FA9-A26D-E1E3979D22D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E201ABF3-67B8-4FA9-A26D-E1E3979D22D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E201ABF3-67B8-4FA9-A26D-E1E3979D22D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E201ABF3-67B8-4FA9-A26D-E1E3979D22D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB98C289-68C0-41F5-A02B-46FDBDF06C7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB98C289-68C0-41F5-A02B-46FDBDF06C7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB98C289-68C0-41F5-A02B-46FDBDF06C7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB98C289-68C0-41F5-A02B-46FDBDF06C7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCCFE9A6-5229-4225-8438-B9BE190443F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCCFE9A6-5229-4225-8438-B9BE190443F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCCFE9A6-5229-4225-8438-B9BE190443F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCCFE9A6-5229-4225-8438-B9BE190443F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A0557AA-2D09-482A-B76C-BD2AF18E8C41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A0557AA-2D09-482A-B76C-BD2AF18E8C41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A0557AA-2D09-482A-B76C-BD2AF18E8C41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A0557AA-2D09-482A-B76C-BD2AF18E8C41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C84B55A3-D606-4952-82DD-429114F3421B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C84B55A3-D606-4952-82DD-429114F3421B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C84B55A3-D606-4952-82DD-429114F3421B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C84B55A3-D606-4952-82DD-429114F3421B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
