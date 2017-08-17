@@ -21,55 +21,18 @@ using Torick.Smartthings.Devices.UniFi;
 
 namespace Torick.Smartthings.Devices.Publisher
 {
-	
-
-	public class DeviceProviderDiscovery
-	{
-		private readonly string[] _providersDlls;
-
-		public DeviceProviderDiscovery(string[] providersDlls) 
-			=> _providersDlls = providersDlls;
-
-		public IEnumerable<IDeviceProvider> DiscoverProviders() 
-			=> _providersDlls
-				.SelectMany(GetFiles)
-				.Select(dllPath => AssemblyLoadContext.Default.LoadFromAssemblyPath(dllPath))
-				.SelectMany(assembly => assembly.GetTypes())
-				.Where(type => typeof(IDeviceProvider).IsAssignableFrom(type))
-				.Select(Activator.CreateInstance)
-				.Cast<IDeviceProvider>();
-
-		private IEnumerable<string> GetFiles(string path)
-		{
-			if (File.Exists(path))
-			{
-				yield return path;
-			}
-			else if (Directory.Exists(path))
-			{
-				foreach (var dll in Directory.GetFiles(path, "*.dll"))
-				{
-					yield return dll;
-				}
-			}
-			else
-			{
-				// Log FILE NOT FOUND
-			}
-		}
-	}
-
 	public class SsdpPublishingService : ISsdpPublishingService, IDisposable
 	{
 		private readonly ConditionalWeakTable<SsdpRootDevice, IDisposable> _publications = new ConditionalWeakTable<SsdpRootDevice, IDisposable>();
 		private readonly object _publicationsGate = new object();
 		private readonly SerialDisposable _subscription = new SerialDisposable();
+		private readonly SsdpDevicePublisher _publisher = new SsdpDevicePublisher();
 
 		private readonly IEnumerable<IDeviceProvider> _providers;
 		private readonly Uri _deviceUrl;
 		private readonly IScheduler _scheduler;
 
-		private ImmutableDictionary<string, SsdpRootDevice> _devices = ImmutableDictionary<string, SsdpRootDevice>.Empty.WithComparers(StringComparer.OrdinalIgnoreCase);
+		private ImmutableDictionary<string, (IDevice source, SsdpRootDevice ssdp)> _devices = ImmutableDictionary<string, (IDevice, SsdpRootDevice)>.Empty.WithComparers(StringComparer.OrdinalIgnoreCase);
 
 		public SsdpPublishingService(IEnumerable<IDeviceProvider> providers, Uri deviceUrl, IScheduler scheduler)
 		{
@@ -82,7 +45,6 @@ namespace Torick.Smartthings.Devices.Publisher
 
 		private IDisposable StartCore()
 		{
-			var publisher = new SsdpDevicePublisher();
 			var deviceSubscriptions = new SerialCompositeDisposable();
 			var controllerSubscription = _providers
 				.Select(provider => provider.GetAndObserveDevices().StartWith(ImmutableList<IDevice>.Empty))
@@ -91,7 +53,7 @@ namespace Torick.Smartthings.Devices.Publisher
 				.Do(devices =>
 				{
 					var publishedDevices = devices
-						.Select(client => PublishDevice(publisher, GetDevice(client)))
+						.Select(client => PublishDevice(_publisher, GetDevice(client)))
 						.ToImmutableList();
 
 					deviceSubscriptions.Update(publishedDevices);
@@ -101,15 +63,20 @@ namespace Torick.Smartthings.Devices.Publisher
 
 			return new CompositeDisposable
 			{
-				publisher,
 				deviceSubscriptions,
 				controllerSubscription
 			};
-		} 
+		}
 
-		public async Task<(bool hasDocument, string docuemnt)> GetDescriptionDocument(string deviceId) 
+		public async Task<IImmutableList<IDevice>> GetDevices(CancellationToken ct)
+			=> _publisher
+				.Devices
+				.Select(d => _devices[d.Uuid].source)
+				.ToImmutableList();
+
+		public async Task<(bool hasDocument, string document)> GetDescriptionDocument(CancellationToken ct, string deviceId) 
 			=> _devices.TryGetValue(deviceId, out var device) 
-				? (true, device.ToDescriptionDocument()) 
+				? (true, device.ssdp.ToDescriptionDocument()) 
 				: (false, string.Empty);
 
 		private SsdpRootDevice GetDevice(IDevice client)
@@ -119,18 +86,18 @@ namespace Torick.Smartthings.Devices.Publisher
 				var devices = _devices;
 				if (devices.TryGetValue(client.Id, out var device))
 				{
-					return device;
+					return device.ssdp;
 				}
 
 				device = ToDevice(client);
 				if (Interlocked.CompareExchange(ref _devices, devices.Add(client.Id, device), devices) == devices)
 				{
-					return device;
+					return device.ssdp;
 				}
 			}
 		}
 
-		private SsdpRootDevice ToDevice(IDevice device) => new SsdpRootDevice
+		private (IDevice, SsdpRootDevice) ToDevice(IDevice device) => (device, new SsdpRootDevice
 		{
 			CacheLifetime = TimeSpan.FromMinutes(30), //How long SSDP clients can cache this info.
 			Location = new Uri($"/api/device/{device.Id}", UriKind.Relative), // Must point to the URL that serves your devices UPnP description document. 
@@ -155,7 +122,7 @@ namespace Torick.Smartthings.Devices.Publisher
 					Value = device.DeviceType.MustHaveValue(nameof(IDevice.DeviceType))
 				}
 			}
-		};
+		});
 
 		private IDisposable PublishDevice(SsdpDevicePublisher publisher, SsdpRootDevice device)
 		{
@@ -180,6 +147,10 @@ namespace Torick.Smartthings.Devices.Publisher
 			}
 		}
 
-		public void Dispose() => _subscription.Dispose();
+		public void Dispose()
+		{
+			_subscription.Dispose();
+			_publisher.Dispose();
+		}
 	}
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -16,7 +17,7 @@ namespace Torick.IoC.Module.Loader
 	{
 		private readonly string[] _providersDlls;
 		private readonly Type[] _arguments;
-		private readonly Lazy<IModule[]> _modules;
+		private readonly Lazy<ImmutableArray<IModule>> _modules;
 
 		public ModuleLoader(string[] providersDlls, Type applicationArguments = null)
 		{
@@ -25,7 +26,7 @@ namespace Torick.IoC.Module.Loader
 				? new Type[0] 
 				: new []{applicationArguments};
 
-			_modules = new Lazy<IModule[]>(GetModules, LazyThreadSafetyMode.PublicationOnly);
+			_modules = new Lazy<ImmutableArray<IModule>>(_GetModules, LazyThreadSafetyMode.PublicationOnly);
 		}
 
 		public void Configure(IServiceCollection collection)
@@ -49,18 +50,33 @@ namespace Torick.IoC.Module.Loader
 			}
 		}
 
-		private IModule[] GetModules()
+		public ImmutableArray<IModule> GetModules()
+			=> _modules.Value;
+
+		private ImmutableArray<IModule> _GetModules()
 			=> _providersDlls
 				.SelectMany(GetFiles)
-				.Select<string, Assembly>(dllPath => AssemblyLoadContext.Default.LoadFromAssemblyPath(dllPath))
+				.Select(dllPath =>
+				{
+					try
+					{
+						return AssemblyLoadContext.Default.LoadFromAssemblyPath(dllPath);
+					}
+					catch (Exception)
+					{
+						return default(Assembly);
+					}
+				})
+				.Where(assembly => assembly != null)
 				.SelectMany(assembly => assembly.GetTypes())
 				.Where(type => typeof(IModule).IsAssignableFrom(type))
 				.Select(Activator.CreateInstance)
 				.Cast<IModule>()
-				.ToArray();
+				.ToImmutableArray();
 
 		private IEnumerable<string> GetFiles(string path)
 		{
+			path = Path.Combine(Directory.GetCurrentDirectory(), path);
 			if (File.Exists(path))
 			{
 				yield return path;

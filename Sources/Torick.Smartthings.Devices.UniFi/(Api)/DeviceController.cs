@@ -8,7 +8,7 @@ using Torick.Smartthings.Devices.UniFi;
 
 namespace Torick.Smartthings.Devices.UniFi
 {
-	[Route("api/[controller]")]
+	[Route("api/unifi")]
 	public class DeviceController : Controller
 	{
 		private readonly IDeviceService _devices;

@@ -6,6 +6,7 @@ using Framework.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using Torick.IoC.Module;
 using Torick.IoC.Module.LaunchArgs;
+using Torick.Smartthings.Devices;
 using Torick.Smartthings.Devices.UniFi;
 using _callbacks = System.Collections.Immutable.ImmutableDictionary<string, System.Collections.Immutable.ImmutableList<Torick.Smartthings.Devices.UniFi.Callback>>;
 
@@ -43,7 +44,8 @@ namespace UniFiControllerClientsProvider
 				    arguments.GetValue(Username),
 				    arguments.GetValue(Password),
 				    svc.GetService<IScheduler>()))
-			    .AddSingleton<IObjectSerializer>(svc => new JsonConverterObjetSerializer())
+			    .AddSingleton<IDeviceProvider>(svc => new UniFiClientProvider(svc.GetService<IUniFiController>()))
+				.AddSingleton<IObjectSerializer>(svc => new JsonConverterObjetSerializer())
 			    .AddSingleton<IObservableDataPersister<_callbacks>>(svc =>
 				{
 				    var persister = new LockedFileDataPersister<_callbacks>("callbacks.json", svc.GetService<IObjectSerializer>());

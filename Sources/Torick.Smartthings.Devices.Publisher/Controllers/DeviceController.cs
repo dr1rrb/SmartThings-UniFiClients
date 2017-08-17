@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -9,7 +10,6 @@ using Torick.Smartthings.Devices.UniFi;
 
 namespace Torick.Smartthings.Devices.Publisher.Controllers
 {
-	[Route("api/[controller]")]
 	public class DeviceController : Controller
 	{
 		private readonly ISsdpPublishingService _ssdp;
@@ -19,10 +19,16 @@ namespace Torick.Smartthings.Devices.Publisher.Controllers
 			_ssdp = ssdp;
 		}
 
-		[HttpGet("{id}")]
-		public async Task<ActionResult> Get(string id)
+		[HttpGet("api/devices")]
+		public async Task<IImmutableList<IDevice>> Get(CancellationToken ct)
 		{
-			var (hasDocument, document) = await _ssdp.GetDescriptionDocument(id);
+			return await _ssdp.GetDevices(ct);
+		}
+
+		[HttpGet("api/[controller]/{id}")]
+		public async Task<ActionResult> Get(CancellationToken ct, string id)
+		{
+			var (hasDocument, document) = await _ssdp.GetDescriptionDocument(ct, id);
 			if (hasDocument)
 			{
 				return Content(document, "application/xml", Encoding.UTF8);

@@ -4,12 +4,14 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Threading.Tasks;
+using Framework.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Torick.IoC.Module.Loader;
+using Torick.Smartthings.Devices.UniFi;
 
 namespace Torick.Smartthings.Devices.Publisher
 {
@@ -33,42 +35,20 @@ namespace Torick.Smartthings.Devices.Publisher
 	        //var arguments = ApplicationArguments.GetArguments;
 
 			// Add framework services.
-			services.AddMvc();
-
 	        services
+		        .AddMvc()
+		        .AddModules("./Devices/");
+
+			services
 		        .AddSingleton<IScheduler>(svc => TaskPoolScheduler.Default)
-				.AddModules("./Devices/")
-
-		  
-				//.AddSingleton<ISsdpPublishingService>(svc => new SsdpPublishingService(
-			 //       new UniFiClientProvider(svc.GetService<IUniFiController>()),
-			 //       new Uri($"http://192.168.144.202:{arguments.GetValue(ApplicationArguments.Port)}"),
-			 //       svc.GetService<IScheduler>()))
 
 
 
-				//     .AddSingleton<IUniFiController>(svc => new UniFiController(
-				//new Uri($"https://{arguments.GetValue(ApplicationArguments.Controller)}/api/"),
-				//arguments.GetValue(ApplicationArguments.Username),
-				//arguments.GetValue(ApplicationArguments.Password), 
-				//svc.GetService<IScheduler>()))
-				//     .AddSingleton<ISsdpPublishingService>(svc => new SsdpPublishingService(
-				//      new UniFiClientProvider(svc.GetService<IUniFiController>()),
-				//      new Uri($"http://192.168.144.202:{arguments.GetValue(ApplicationArguments.Port)}"),
-				//svc.GetService<IScheduler>()))
-				//     .AddSingleton<IObjectSerializer>(svc => new JsonConverterObjetSerializer())
-				//     .AddSingleton<IObservableDataPersister<_callbacks>>(svc =>
-				//     {
-				//      var persister = new LockedFileDataPersister<_callbacks>("callbacks.json", svc.GetService<IObjectSerializer>());
-				//      var withDefault = new DefaultValueDataPersisterDecorator<_callbacks>(persister, DefaultValueDataPersisterDecoratorMode.All, ImmutableDictionary<string, ImmutableList<Callback>>.Empty);
-				//      var observable = new ObservableDataPersisterDecorator<_callbacks>(withDefault, svc.GetService<IScheduler>());
-
-				//      return observable;
-				//     })
-				//     .AddSingleton<IDeviceService>(svc => new DeviceService(
-				//      svc.GetService<IUniFiController>(),
-				//      svc.GetService<IObservableDataPersister<_callbacks>>(),
-				//      svc.GetService<IScheduler>()))
+		        .AddSingleton<ISsdpPublishingService>(svc => new SsdpPublishingService(
+			        svc.GetServices<IDeviceProvider>(),
+					//new Uri($"http://192.168.144.202:{arguments.GetValue(ApplicationArguments.Port)}"),
+			        new Uri("http://192.168.144.202:5000"),
+					svc.GetService<IScheduler>()))
 				;
 		}
 
@@ -80,8 +60,7 @@ namespace Torick.Smartthings.Devices.Publisher
 
             app
 				.UseMvc()
-	            .UseResponseBuffering()
-				;
+	            .UseResponseBuffering();
         }
     }
 }
