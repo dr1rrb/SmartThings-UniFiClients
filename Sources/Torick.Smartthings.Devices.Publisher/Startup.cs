@@ -4,14 +4,18 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Threading.Tasks;
-using Framework.Extensions;
+using Framework.Persistence;
+using Torick.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Torick.Persistence;
+using Torick.Serialization;
 using Torick.Smartthings.Devices.UniFi;
+using _callbacks = System.Collections.Immutable.ImmutableDictionary<string, System.Collections.Immutable.ImmutableList<Torick.Smartthings.Devices.Callback>>;
 
 namespace Torick.Smartthings.Devices.Publisher
 {
@@ -41,13 +45,23 @@ namespace Torick.Smartthings.Devices.Publisher
 
 			services
 		        .AddSingleton<IScheduler>(svc => TaskPoolScheduler.Default)
-
-
-
 		        .AddSingleton<ISsdpPublishingService>(svc => new SsdpPublishingService(
 			        svc.GetServices<IDeviceProvider>(),
 					//new Uri($"http://192.168.144.202:{arguments.GetValue(ApplicationArguments.Port)}"),
 			        new Uri("http://192.168.144.202:5000"),
+					svc.GetService<IScheduler>()))
+				.AddSingleton<IObjectSerializer>(svc => new JsonConverterObjetSerializer())
+				.AddSingleton<IObservableDataPersister<_callbacks>>(svc =>
+				{
+					var persister = new LockedFileDataPersister<_callbacks>("callbacks.json", svc.GetService<IObjectSerializer>());
+					var withDefault = new DefaultValueDataPersisterDecorator<_callbacks>(persister, DefaultValueDataPersisterDecoratorMode.All, _callbacks.Empty);
+					var observable = new ObservableDataPersisterDecorator<_callbacks>(withDefault, svc.GetService<IScheduler>());
+
+					return observable;
+				})
+				.AddSingleton<IDeviceStatusCallbackManager>(svc => new DeviceStatusCallbackManager(
+					svc.GetServices<IDeviceProvider>(),
+					svc.GetService<IObservableDataPersister<_callbacks>>(),
 					svc.GetService<IScheduler>()))
 				;
 		}

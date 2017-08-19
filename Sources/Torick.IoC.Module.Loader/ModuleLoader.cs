@@ -31,10 +31,11 @@ namespace Torick.IoC.Module.Loader
 
 		public void Configure(IServiceCollection collection)
 		{
-			collection.AddSingleton(this);
-
 			var modules = _modules.Value;
 			var arguments = ArgumentManager.Create(modules.Select(module => module.GetType()).Concat(_arguments));
+
+			collection.AddSingleton(this);
+			collection.AddSingleton(arguments);
 
 			foreach (var module in modules)
 			{

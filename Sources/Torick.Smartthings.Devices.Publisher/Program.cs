@@ -28,7 +28,8 @@ namespace Torick.Smartthings.Devices.Publisher
 
 	        host.Services.StartBackgroundServices();
 			((SsdpPublishingService)host.Services.GetService<ISsdpPublishingService>()).Start();
-	        
+	        ((DeviceStatusCallbackManager)host.Services.GetService<IDeviceStatusCallbackManager>()).Start();
+
 			host.Run();
         }
     }

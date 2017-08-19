@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Reactive.Concurrency;
-using Framework.Persistence;
-using Framework.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using Torick.IoC.Module;
 using Torick.IoC.Module.LaunchArgs;
 using Torick.Smartthings.Devices;
 using Torick.Smartthings.Devices.UniFi;
-using _callbacks = System.Collections.Immutable.ImmutableDictionary<string, System.Collections.Immutable.ImmutableList<Torick.Smartthings.Devices.UniFi.Callback>>;
+using _callbacks = System.Collections.Immutable.ImmutableDictionary<string, System.Collections.Immutable.ImmutableList<Torick.Smartthings.Devices.Callback>>;
 
 namespace UniFiControllerClientsProvider
 {
@@ -44,25 +42,12 @@ namespace UniFiControllerClientsProvider
 				    arguments.GetValue(Username),
 				    arguments.GetValue(Password),
 				    svc.GetService<IScheduler>()))
-			    .AddSingleton<IDeviceProvider>(svc => new UniFiClientProvider(svc.GetService<IUniFiController>()))
-				.AddSingleton<IObjectSerializer>(svc => new JsonConverterObjetSerializer())
-			    .AddSingleton<IObservableDataPersister<_callbacks>>(svc =>
-				{
-				    var persister = new LockedFileDataPersister<_callbacks>("callbacks.json", svc.GetService<IObjectSerializer>());
-				    var withDefault = new DefaultValueDataPersisterDecorator<_callbacks>(persister, DefaultValueDataPersisterDecoratorMode.All, ImmutableDictionary<string, ImmutableList<Callback>>.Empty);
-				    var observable = new ObservableDataPersisterDecorator<_callbacks>(withDefault, svc.GetService<IScheduler>());
-
-				    return observable;
-			    })
-			    .AddSingleton<IDeviceService>(svc => new DeviceService(
-				    svc.GetService<IUniFiController>(),
-				    svc.GetService<IObservableDataPersister<_callbacks>>(),
-				    svc.GetService<IScheduler>()));
+			    .AddSingleton<IDeviceProvider>(svc => new UniFiControlerToDeviceProviderAdapter(svc.GetService<IUniFiController>()))
+			;
 	    }
 
 		public void Launch(IServiceProvider services)
 	    {
-			((DeviceService)services.GetService<IDeviceService>()).Start();
 		}
 	}
 }

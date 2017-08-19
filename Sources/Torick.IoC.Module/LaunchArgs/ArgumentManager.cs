@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-using Torick.IoC.Module.Extensions;
+using Torick.Extensions;
 
 namespace Torick.IoC.Module.LaunchArgs
 {

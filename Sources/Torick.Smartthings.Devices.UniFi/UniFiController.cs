@@ -7,8 +7,8 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Framework.Extensions;
-using Framework.Web;
+using Torick.Extensions;
+using Torick.Web;
 using Newtonsoft.Json;
 
 namespace Torick.Smartthings.Devices.UniFi
@@ -53,7 +53,7 @@ namespace Torick.Smartthings.Devices.UniFi
 				// In any case, retry every 5 sec
 				.Retry(TimeSpan.FromSeconds(5), _scheduler)
 
-				// SHare teh same subscription for eaxch devices !
+				// Share the same subscription for each devices !
 				.Replay(1)
 				.RefCount();
 		}

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Torick.IoC.Module.Extensions;
+using Torick.Extensions;
 
 namespace Torick.IoC.Module.LaunchArgs
 {

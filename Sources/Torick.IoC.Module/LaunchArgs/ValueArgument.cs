@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using Torick.IoC.Module.Extensions;
+using Torick.Extensions;
 
 namespace Torick.IoC.Module.LaunchArgs
 {
