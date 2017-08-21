@@ -69,5 +69,8 @@ namespace Torick.Extensions
 				_disposables.Dispose();
 			}
 		}
+
+		public static IObservable<T> StartWith<T>(this IObservable<T> source, Func<T> value, IScheduler scheduler)
+			=> Observable.Defer(() => Observable.Start(value, scheduler).Concat(source));
 	}
 }

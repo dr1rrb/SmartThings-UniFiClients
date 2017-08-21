@@ -72,7 +72,7 @@ namespace Torick.Smartthings.Devices.Publisher.Controllers
 				Expiration = callbackExpiration
 			};
 
-			await _callbacks.AddCallback(ControllerContext.HttpContext.RequestAborted, deviceId, callback);
+			await _callbacks.AddCallback(HttpContext.RequestAborted, deviceId, callback);
 
 			Response.Headers["SID"] = $"uuid:{callback.Id}";
 			Response.Headers["SERVER"] = $"Windows/10.1706 UPnP/1.1 UniFiClientManagerServer/1.0";

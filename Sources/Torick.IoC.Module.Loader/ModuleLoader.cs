@@ -61,6 +61,7 @@ namespace Torick.IoC.Module.Loader
 				{
 					try
 					{
+						Console.WriteLine($"Loading module '{dllPath}'");
 						return AssemblyLoadContext.Default.LoadFromAssemblyPath(dllPath);
 					}
 					catch (Exception)
