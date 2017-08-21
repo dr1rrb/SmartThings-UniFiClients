@@ -5,13 +5,6 @@ VisualStudioVersion = 15.0.26724.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Torick.Smartthings.Devices.Publisher", "Torick.Smartthings.Devices.Publisher\Torick.Smartthings.Devices.Publisher.csproj", "{388D938E-D963-4FCF-BCEE-3F405AF76A4A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SmartthingsUniFiClientsDevices", "SmartthingsUniFiClientsDevices", "{45024BA5-3F33-4C86-B3A8-9F8A6F8123A2}"
-	ProjectSection(SolutionItems) = preProject
-		UniFi client.groovy = UniFi client.groovy
-		UniFi controller.groovy = UniFi controller.groovy
-		UniFi manager.groovy = UniFi manager.groovy
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Torick.IoC.Module", "Torick.IoC.Module\Torick.IoC.Module.csproj", "{BB98C289-68C0-41F5-A02B-46FDBDF06C7F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Torick.IoC.Module.Loader", "Torick.IoC.Module.Loader\Torick.IoC.Module.Loader.csproj", "{DCCFE9A6-5229-4225-8438-B9BE190443F1}"
@@ -22,9 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Torick.Smartthings.Devices.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Torick.Smartthings.Devices.Screen", "Torick.Smartthings.Devices.Screen\Torick.Smartthings.Devices.Screen.csproj", "{DF04B5E2-FEA5-4B5B-A30D-D8C74196201F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Torick.Core", "Torick.Core\Torick.Core.csproj", "{AA11D0AF-CB70-4EE8-B59C-1689FE3AFDBE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Torick.Core", "Torick.Core\Torick.Core.csproj", "{AA11D0AF-CB70-4EE8-B59C-1689FE3AFDBE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Torick.Web", "Torick.Web\Torick.Web.csproj", "{28D44B7F-CB2A-4948-9121-D7D1EA2DEA0F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Torick.Web", "Torick.Web\Torick.Web.csproj", "{28D44B7F-CB2A-4948-9121-D7D1EA2DEA0F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

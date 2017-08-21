@@ -14,5 +14,17 @@
     <ProjectReference Include="..\Torick.Smartthings.Devices\Torick.Smartthings.Devices.csproj" />
     <ProjectReference Include="..\Torick.Web\Torick.Web.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="_Smartthings\UniFi client.groovy">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="_Smartthings\UniFi controller.groovy">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="_Smartthings\UniFi manager.groovy">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   
 </Project>

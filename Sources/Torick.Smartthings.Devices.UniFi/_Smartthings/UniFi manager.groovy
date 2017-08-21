@@ -53,7 +53,7 @@ def deviceDiscovery()
 	// First, start the SSDP discovery for setup. This mode runs only once, the "recurrancy" is ensured by the auto-refresh of this page.
 	startSsdpDiscoveryForSetup()
 
-	def devices = getDevices().collectEntries { key, value -> [(key): "${value.name}"] }
+	def devices = getDevices().collectEntries { key, value -> [(key): "${value.name} (${value.deviceType})"] }
 
 	return dynamicPage(name: "deviceDiscovery", title: "Discovery Started!", nextPage: "setupNotification", refreshInterval: 5, uninstall: false) {
 		section("Please wait while we discover your UniFi clients. Discovery can take a while, so sit back and relax! Select your device below once discovered.") {
@@ -123,7 +123,7 @@ def onDeviceDiscoveredForMaintenance(evt)
 	def client = getChildDevice(id);
 	if (client)
 	{
-		log.debug "Client device '${id}' exists (${client}), set its host to '${host}'"
+		log.debug "Device '${id}' exists (${client}), set its host to '${host}'"
 		client.updateHost(host);
 	}
 	
@@ -131,12 +131,12 @@ def onDeviceDiscoveredForMaintenance(evt)
 	def controller = getChildDevice(mac);
 	if (controller)
 	{
-		log.debug "Controller for '${mac}' exists (${controller}), set its host to ${host}"
+		log.debug "Multiplexer for '${mac}' exists (${controller}), set its host to ${host}"
 		controller.updateHost(host);
 	}
 	else if (client)
 	{
-		log.debug "Controller is missing for '${mac}', create a new one"
+		log.debug "Multiplexer is missing for '${mac}', create a new one"
 		ensureHub(host, mac, client.hub.id)
 	}
 }
@@ -192,10 +192,12 @@ void onDeviceConfirmed(physicalgraph.device.HubResponse response)
 			name: document.device.friendlyName.text(), 
 			model:document.device.modelName?.text(), 
 			serialNumber:document.device.serialNum?.text(), 
+            deviceNamespace:document.device.smartthingsDeviceNamespace?.text(),
+        	deviceType:document.device.smartthingsDeviceType?.text(),
 		];
-	
+    
 	log.debug "Received device description for '${id}': ${device}."
-	
+    
 	getDevices()[id] = device;
 }
 
@@ -230,7 +232,7 @@ def setupDevice(id)
 		log.error "A device was selected but it is missing from the discovered devices: ${id}";
 		return;
 	}
-		
+	
 	def child = getChildDevice(id)
 	if (child) 
 	{
@@ -240,13 +242,13 @@ def setupDevice(id)
 	{
 		// First, ensure to create a hub to act as callback multiplexer
 		ensureHub(selectedDevice.host, selectedDevice.hostMac, selectedDevice.hub);
-	
-		log.debug "Creating UniFi client device ${id}"
+		
+		log.debug "Creating '${selectedDevice.deviceType}' ${id}"
 		addChildDevice(
-			"torick.net", 
-			"UniFi client device",
+			selectedDevice.deviceNamespace ?: "torick.net", 
+			selectedDevice.deviceType ?: "UniFi client device",
 			selectedDevice.id, // == id, 
-			selectedDevice.hub, 
+			selectedDevice.hub,
 			[
 				"label": selectedDevice.name,
 				"data": [

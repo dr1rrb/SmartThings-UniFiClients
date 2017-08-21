@@ -17,4 +17,10 @@
     <ProjectReference Include="..\Torick.Smartthings.Devices\Torick.Smartthings.Devices.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="_Smartthings\Computer screen.groovy">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
