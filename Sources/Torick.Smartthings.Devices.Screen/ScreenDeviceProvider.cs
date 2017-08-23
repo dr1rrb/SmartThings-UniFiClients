@@ -59,7 +59,7 @@ namespace Torick.Smartthings.Devices.Screen
 
 	    public (bool isKnownDevice, IObservable<object> status) TryGetAndObserveStatus(string deviceId) 
 			=> _device.Id.Equals(deviceId, StringComparison.OrdinalIgnoreCase) 
-				? (true, _observeStatus.StartWith(() => _status, _scheduler).Select(s => s ? ScreenStatus.On : ScreenStatus.Off as object)) 
+				? (true, _observeStatus.StartWith(() => _status, _scheduler).Select(s => new ScreenDeviceStatus(s) as object)) 
 				: (false, Observable.Empty<object>(_scheduler));
 
 		private class Device : IDevice

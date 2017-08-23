@@ -1,7 +1,7 @@
 import groovy.time.TimeCategory
 
 /**
- *  UniFi controller
+ *  Devices multiplexer
  *
  *  Copyright 2017 Dr1rrb
  *

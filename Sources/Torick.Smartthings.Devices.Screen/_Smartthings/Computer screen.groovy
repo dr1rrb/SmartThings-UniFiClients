@@ -1,5 +1,5 @@
 /**
- *  UniFi client device
+ *  Computer screen
  *
  *  Copyright 2017 Dr1rrb
  *
@@ -19,11 +19,12 @@ metadata {
 		namespace: "torick.net", 
 		author: "Dr1rrb") 
 	{
-		capability "Presence Sensor"
+		capability "Switch"
 		capability "Sensor"
 		capability "Refresh"
 		capability "Actuator"
 		
+		attribute "switch", "string"
 		attribute "host", "string"
 	}
 
@@ -31,15 +32,22 @@ metadata {
 	{
 		// TODO: define status and reply messages here
 	}
-
-	tiles 
+	
+	tiles
 	{
-		standardTile("presence", "device.presence", width: 3, height: 2, canChangeBackground: true, canChangeIcon: true) {
-			state("not present", label:'not present', icon:"st.presence.tile.not-present", backgroundColor:"#ffffff", action: "refresh", nextState: "not present")
-			state("present", label:'present', icon:"st.presence.tile.present", backgroundColor:"#53a7c0", action: "refresh", nextState: "present")
+		multiAttributeTile(name:"switch", type: "lighting", width: 3, height: 2, canChangeIcon: true){
+			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
+				attributeState "on", label: '${name}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#00A0DC", nextState:"off"
+				attributeState "off", label: '${name}', action: "switch.on", icon: "st.switches.switch.off", backgroundColor: "#ffffff", nextState:"on"
+			}
 		}
-		main "presence"
-		details "presence"
+
+		standardTile("refresh", "device.switch", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
+		}
+
+		main "switch"
+		details(["switch","refresh"])
 	}
 }
 
@@ -135,23 +143,66 @@ def subscribeToController()
 	log.debug "Sent to ${host} ${command} => ${result}"
 }
 
+// *********************** Device specific
+def on()
+{
+	log.debug "Turning screen on"
+
+	def host = device.currentValue("host");
+	def id = device.deviceNetworkId;
+	def command = new physicalgraph.device.HubAction(
+		method: "PUT",
+		path: "/api/screen/on",
+		headers: [
+			Host: host,
+			"Smartthings-Device": id,
+            "Content-Length": 0
+		]
+	);
+	
+	def result = sendHubCommand(command)
+	
+	log.debug "Sent to ${host} ${command} => ${result}"
+}
+
+def off()
+{
+	log.debug "Turning screen off"
+
+	def host = device.currentValue("host");
+	def id = device.deviceNetworkId;
+	def command = new physicalgraph.device.HubAction(
+		method: "PUT",
+		path: "/api/screen/off",
+		headers: [
+			Host: host,
+			"Smartthings-Device": id,
+            "Content-Length": 0
+		]
+	);
+	
+	def result = sendHubCommand(command)
+	
+	log.debug "Sent to ${host} ${command} => ${result}"
+}
+
 // parse events into attributes
 def parse(String description)
 {
 	//log.debug "Received a message from the hub '${description}'"
 	
 	def msg = parseLanMessage(description)
-	if (msg?.json?.presence)
+	if (msg?.json?.status)
 	{
-		def previous = device.currentValue("presence");
-		def changed = msg.json.presence != previous;
+		def previous = device.currentValue("switch");
+		def changed = msg.json.status != previous;
 		
-		log.debug "Received a presence state notification '${msg.json.presence}' (was '${previous}'; changed: ${changed})"
+		log.debug "Received a presence state notification '${msg.json.status}' (was '${previous}'; changed: ${changed})"
 		
 		sendEvent(
-			name: "presence", 
-			value: msg.json.presence,
-			descriptionText: "${device.displayName} is ${msg.json.presence}",
+			name: "switch", 
+			value: msg.json.status,
+			descriptionText: "${device.displayName} is ${msg.json.status}",
 			displayed: changed,
 			isStateChange: changed);
 	}

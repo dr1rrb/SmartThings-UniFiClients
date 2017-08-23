@@ -1,5 +1,5 @@
 /**
- *  UniFi client devices manager
+ *  Torick devices installer
  *
  *  Copyright 2017 Dr1rrb
  *
@@ -56,7 +56,7 @@ def deviceDiscovery()
 	def devices = getDevices().collectEntries { key, value -> [(key): "${value.name} (${value.deviceType})"] }
 
 	return dynamicPage(name: "deviceDiscovery", title: "Discovery Started!", nextPage: "setupNotification", refreshInterval: 5, uninstall: false) {
-		section("Please wait while we discover your UniFi clients. Discovery can take a while, so sit back and relax! Select your device below once discovered.") {
+		section("Please wait while we discover your devices. Discovery can take a while, so sit back and relax! Select your device below once discovered.") {
 			input "selectedDevices", "enum", required: false, title: "Select clients (${devices.size() ?: 0} found)", multiple: true, options: devices
 		}
 	}
@@ -90,7 +90,7 @@ def initialize()
 // Region: SSDP discovery
 void startSsdpDiscoveryForMaintenance()
 {
-	subscribe(location, "ssdpTerm.urn:torick-net:device:UniFiDevice:1", onDeviceDiscoveredForMaintenance);
+	subscribe(location, "ssdpTerm.urn:torick-net:device:common:1", onDeviceDiscoveredForMaintenance);
 
 	requestSsdpDiscovery();
 	runEvery15Minutes("requestSsdpDiscovery");
@@ -98,16 +98,16 @@ void startSsdpDiscoveryForMaintenance()
 
 void startSsdpDiscoveryForSetup()
 {
-	subscribe(location, "ssdpTerm.urn:torick-net:device:UniFiDevice:1", onDeviceDiscoveredForSetup);
+	subscribe(location, "ssdpTerm.urn:torick-net:device:common:1", onDeviceDiscoveredForSetup);
 
 	requestSsdpDiscovery();
 }
 
 void requestSsdpDiscovery() 
 {
-	log.debug "Searching for UniFi devices on LAN using SSDP"
+	log.debug "Searching for devices on LAN using SSDP"
 
-	sendHubCommand(new physicalgraph.device.HubAction("lan discovery urn:torick-net:device:UniFiDevice:1", physicalgraph.device.Protocol.LAN))
+	sendHubCommand(new physicalgraph.device.HubAction("lan discovery urn:torick-net:device:common:1", physicalgraph.device.Protocol.LAN))
 }
 
 def onDeviceDiscoveredForMaintenance(evt) 
@@ -137,7 +137,7 @@ def onDeviceDiscoveredForMaintenance(evt)
 	else if (client)
 	{
 		log.debug "Multiplexer is missing for '${mac}', create a new one"
-		ensureHub(host, mac, client.hub.id)
+		ensureMultiplexer(host, mac, client.hub.id)
 	}
 }
 
@@ -241,7 +241,7 @@ def setupDevice(id)
 	else
 	{
 		// First, ensure to create a hub to act as callback multiplexer
-		ensureHub(selectedDevice.host, selectedDevice.hostMac, selectedDevice.hub);
+		ensureMultiplexer(selectedDevice.host, selectedDevice.hostMac, selectedDevice.hub);
 		
 		log.debug "Creating '${selectedDevice.deviceType}' ${id}"
 		addChildDevice(
@@ -298,24 +298,24 @@ def hubStatusChanged(evt)
 	}
 }
 
-def ensureHub(host, mac, hub)
+def ensureMultiplexer(host, mac, hub)
 {
 	def controller = getChildDevice(mac);
 	if (controller == null)
 	{
-		log.debug "Creating controller '${mac}' on hub '${hub}' (host: ${host})"
+		log.debug "Creating multiplexer '${mac}' on hub '${hub}' (host: ${host})"
 	
 		addChildDevice(
 			"torick.net", 
-			"UniFi controller",
+			"Devices multiplexer",
 			mac,
 			hub, 
 			[
-				"label": "UniFi controller",
+				"label": "Devices multiplexer (${mac})",
 				"data": [
 					"host": host,
 					"hostMac": mac,
-					"type": "hub"
+					"type": "multiplexer"
 				]
 			])
 

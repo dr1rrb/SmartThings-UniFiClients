@@ -8,8 +8,20 @@ namespace Torick.Smartthings.Devices.Screen
 {
     public class ScreenDeviceStatus
     {
-	    [JsonProperty("value")]
+		public ScreenDeviceStatus(bool isOn)
+		{
+			Status = isOn 
+				? ScreenStatus.On 
+				: ScreenStatus.Off;
+		}
+
+		[JsonProperty("status")]
 	    [JsonConverter(typeof(StringEnumConverter))]
-	    public ScreenStatus Value { get; set; }
+	    public ScreenStatus Status { get; set; }
+
+	    public override string ToString()
+	    {
+		    return Status.ToString();
+	    }
     }
 }

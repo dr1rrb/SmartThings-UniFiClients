@@ -102,7 +102,7 @@ namespace Torick.Smartthings.Devices.Publisher
 			CacheLifetime = TimeSpan.FromMinutes(30), //How long SSDP clients can cache this info.
 			Location = new Uri($"/api/device/{device.Id}", UriKind.Relative), // Must point to the URL that serves your devices UPnP description document. 
 			DeviceTypeNamespace = "torick-net",
-			DeviceType = "UniFiDevice",
+			DeviceType = "common",
 			DeviceVersion = 1,
 			FriendlyName = device.DisplayName.MustHaveValue(nameof(IDevice.DisplayName)), // Yes de-entitize should have be done in the UniFi controller, but as in fact we use this only once ...
 			Manufacturer = device.Manufacturer.OrDefault("unknown"),
