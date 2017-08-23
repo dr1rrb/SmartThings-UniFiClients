@@ -33,7 +33,7 @@ metadata {
 		// TODO: define status and reply messages here
 	}
 	
-	tiles
+	tiles() 
 	{
 		multiAttributeTile(name:"switch", type: "lighting", width: 3, height: 2, canChangeIcon: true){
 			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
@@ -92,22 +92,12 @@ def updateHost(newHost)
 
 def updateHostStatus(isOnline)
 {
-	def previous = device.currentValue("presence");
-	log.debug "Received notification of host status isOnline: ${isOnline} (Device was ${previous})."
+	def current = device.currentValue("switch");
+	log.debug "Received notification of host status isOnline: ${isOnline} (Device is ${current})."
 
 	if(isOnline)
 	{
 		refresh();
-	}
-	else
-	{
-		def changed = previous == "present";
-		sendEvent(
-			name: "presence", 
-			value: "not present",
-			descriptionText: "${device.displayName} is not present",
-			displayed: changed,
-			isStateChange: changed);
 	}
 }
 
@@ -161,6 +151,12 @@ def on()
 	);
 	
 	def result = sendHubCommand(command)
+    
+    sendEvent(
+        name: "switch", 
+        value: "on",
+        descriptionText: "${device.displayName} is off");
+
 	
 	log.debug "Sent to ${host} ${command} => ${result}"
 }
@@ -182,6 +178,11 @@ def off()
 	);
 	
 	def result = sendHubCommand(command)
+    
+    sendEvent(
+        name: "switch", 
+        value: "off",
+        descriptionText: "${device.displayName} is off");
 	
 	log.debug "Sent to ${host} ${command} => ${result}"
 }
@@ -197,7 +198,7 @@ def parse(String description)
 		def previous = device.currentValue("switch");
 		def changed = msg.json.status != previous;
 		
-		log.debug "Received a presence state notification '${msg.json.status}' (was '${previous}'; changed: ${changed})"
+		log.debug "Received a status notification '${msg.json.status}' (was '${previous}'; changed: ${changed})"
 		
 		sendEvent(
 			name: "switch", 
