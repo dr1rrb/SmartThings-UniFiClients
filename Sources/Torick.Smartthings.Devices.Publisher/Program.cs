@@ -16,14 +16,14 @@ namespace Torick.Smartthings.Devices.Publisher
     {
         public static void Main(string[] args)
         {
-	        //var arguments = ApplicationArguments.GetArguments;
+			// Note: Since modules are not loaded yet, at this point we have access only to arguments defined at the application level (i.e. ApplicationArguments).
+	        var arguments = ApplicationArguments.Arguments;
 			var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()
-				//.UseUrls($"http://0.0.0.0:{arguments.GetValue(ApplicationArguments.Port)}")
-				.UseUrls($"http://0.0.0.0:5000")
+				.UseUrls($"http://0.0.0.0:{arguments.GetValue(ApplicationArguments.Port)}")
 				.Build();
 
 	        host.Services.StartBackgroundServices();

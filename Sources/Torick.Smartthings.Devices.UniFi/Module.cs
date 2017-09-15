@@ -14,7 +14,7 @@ namespace UniFiControllerClientsProvider
     {
 	    public static readonly ValueArgument Controller = new ValueArgument("unifi.controller")
 	    {
-		    Name = "Username",
+		    Name = "Controller",
 		    Description = "Endpoint of the UniFi controller (<uri|ip>[:port]).",
 		    IsRequired = true
 	    };

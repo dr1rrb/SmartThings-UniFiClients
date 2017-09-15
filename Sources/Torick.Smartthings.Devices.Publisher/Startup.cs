@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Torick.IoC.Module.LaunchArgs;
 using Torick.Persistence;
 using Torick.Serialization;
 using Torick.Smartthings.Devices.UniFi;
@@ -36,19 +37,16 @@ namespace Torick.Smartthings.Devices.Publisher
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-	        //var arguments = ApplicationArguments.GetArguments;
-
 			// Add framework services.
 	        services
 		        .AddMvc()
-		        .AddModules("./Devices/");
+		        .AddModules(typeof(ApplicationArguments), "./Devices/");
 
 			services
 		        .AddSingleton<IScheduler>(svc => TaskPoolScheduler.Default)
 		        .AddSingleton<ISsdpPublishingService>(svc => new SsdpPublishingService(
 			        svc.GetServices<IDeviceProvider>(),
-					//new Uri($"http://192.168.144.202:{arguments.GetValue(ApplicationArguments.Port)}"),
-			        new Uri("http://192.168.144.202:5000"),
+					new Uri($"http://{svc.GetService<ArgumentManager>().GetValue(ApplicationArguments.Host)}:{svc.GetService<ArgumentManager>().GetValue(ApplicationArguments.Port)}"),
 					svc.GetService<IScheduler>()))
 				.AddSingleton<IObjectSerializer>(svc => new JsonConverterObjetSerializer())
 				.AddSingleton<IObservableDataPersister<_callbacks>>(svc =>

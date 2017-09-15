@@ -1,46 +1,45 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Threading.Tasks;
-//using Framework.LaunchArgs;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Threading.Tasks;
+using Torick.Extensions;
+using Torick.IoC.Module.LaunchArgs;
 
-//namespace Torick.Smartthings.Devices.Publisher
-//{
-//    public class ApplicationArguments
-//    {
-//		public static readonly Argument Help = CommonArguments.Help;
+namespace Torick.Smartthings.Devices.Publisher
+{
+	public class ApplicationArguments
+	{
+		public static readonly Argument Help = CommonArguments.Help;
 
-//	    public static readonly ValueArgument<int> Port = new ValueArgument<int>("port")
-//	    {
-//		    Name = "Port",
-//		    Description = "The port to listen on (used for communication between the smartthings devices and the upnp adapter).",
-//		    IsRequired = true,
-//		    DefaultValue = 5000
-//	    };
+		public static readonly ValueArgument Host = new ValueArgument("host")
+		{
+			Name = "Server hots name",
+			Description = "The uri/ip that smartthings have to use to reach this controller",
+			IsRequired = true,
+			DefaultValue = GetDefaultHost()
+		};
 
-//		public static readonly ValueArgument Controller = new ValueArgument("c", "controller")
-//	    {
-//		    Name = "Username",
-//		    Description = "Endpoint of the UniFi controller (<uri|ip>[:port]).",
-//		    IsRequired = true
-//	    };
+		public static readonly ValueArgument<int> Port = new ValueArgument<int>("port")
+		{
+			Name = "Server port",
+			Description = "The port to listen on (used for communication between the smartthings devices and the upnp adapter).",
+			IsRequired = true,
+			DefaultValue = 5000
+		};
 
-//		public static readonly ValueArgument Username = new ValueArgument("u", "username")
-//	    {
-//		    Name = "Username",
-//		    Description = "Username of the UniFi controller.",
-//		    IsRequired = true,
-//		    DefaultValue = "Admin"
-//	    };
+		// This MUST be the last on the class in order to let other properties being initialized
+		public static ArgumentManager Arguments { get; } = ArgumentManager.Create(typeof(ApplicationArguments));
 
-//	    public static readonly ValueArgument Password = new ValueArgument("p", "password")
-//	    {
-//		    Name = "Password",
-//		    Description = "Password of the UniFi controller.",
-//		    IsRequired = true
-//	    };
+		private static string GetDefaultHost()
+		{
+			var domain = IPGlobalProperties.GetIPGlobalProperties().DomainName.Trim('.');
+			var hostName = Dns.GetHostName().Trim('.');
 
-//		// This MUST be the last on the class in order to let other properties being initialized
-//	    public static ArgumentManager GetArguments { get; } = ArgumentManager.Create(typeof(ApplicationArguments));
-//	}
-//}
+			return domain.HasValue()
+				? hostName.TrimEnd(domain, StringComparison.OrdinalIgnoreCase) + "." + domain
+				: hostName;
+		}
+	}
+}
